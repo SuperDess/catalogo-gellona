@@ -971,16 +971,16 @@ const CAMPOS_SISTEMA = [
 ];
 
 const ALIASES={
-  descripcion:['descripcion','description','desc','nombre','name','producto','repuesto','articulo','artículo'],
-  marca:['marca','brand','fabricante','make','proveedor'],
-  modelo:['modelo','model','vehiculo','vehículo','auto','carro','compatible'],
-  codigo:['codigo','código','code','cod','ref','referencia','part','sku','id','part_number','numero'],
+  descripcion:['descripcion','description','desc','nombre','name','producto','repuesto','articulo','artículo','DESCRIPCION'],
+  marca:['marca','brand','fabricante','make','proveedor','MARCA'],
+  modelo:['modelo','model','vehiculo','vehículo','auto','carro','compatible','MODELOS','aplicación 1','aplicacion 1','APLICACIÓN 1','aplicación','aplicacion'],
+  codigo:['codigo','código','code','cod','ref','referencia','part','sku','id','part_number','numero','CODIGO GH','codigo gh'],
   anio_desde:['anio_desde','año_desde','desde','year_from','anio','año','year','year_start','año_inicio'],
   anio_hasta:['anio_hasta','año_hasta','hasta','year_to','year_end','año_fin'],
-  cilindrada:['cilindrada','cc','motor','engine','displacement','litros'],
+  cilindrada:['cilindrada','cc','motor','engine','displacement','litros','MEDIDAS','medidas'],
   categoria:['categoria','categoría','category','tipo','type','rubro','familia','grupo'],
-  precio:['precio','price','valor','cost','costo','pvp','importe'],
-  stock:['stock','disponible','available','qty','cantidad','inventory','existencia','unidades'],
+  precio:['precio','price','valor','cost','costo','pvp','importe','PRECIO NETO','precio neto','PRECIO PAR GH','precio par gh','PRECIO'],
+  stock:['stock','disponible','available','qty','cantidad','inventory','existencia','unidades','CANTIDAD','STOCK','STOCK POR PAR','stock por par'],
   emoji:['emoji','icon','icono','ícono','simbolo','símbolo']
 };
 
@@ -988,10 +988,11 @@ let _mapeoCtx = null; // { rows, modo, nombre }
 
 function autoDetectarMapeo(headers){
   const mapa = {};
+  const headersLow = headers.map(h=>h.toLowerCase().trim());
   CAMPOS_SISTEMA.forEach(campo=>{
-    const aliases = [campo.key, ...(ALIASES[campo.key]||[])];
-    const match = headers.find(h => aliases.includes(h.toLowerCase().trim().replace(/[áéíóú]/g,c=>({á:'a',é:'e',í:'i',ó:'o',ú:'u'}[c]||c))));
-    mapa[campo.key] = match || '';
+    const aliases = [campo.key, ...(ALIASES[campo.key]||[])].map(a=>a.toLowerCase().trim());
+    const idx = headersLow.findIndex(h => aliases.includes(h));
+    mapa[campo.key] = idx>=0 ? headers[idx] : '';
   });
   return mapa;
 }
@@ -1020,8 +1021,37 @@ function leerXLSX(file,modo,st){
   r.onload=e=>{
     try {
       const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-      const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
-      procesarYMapear(rows,modo,file.name,st);
+      let todasLasFilas=[];
+      let hojasLeidas=[];
+      wb.SheetNames.forEach(nombreHoja=>{
+        const ws=wb.Sheets[nombreHoja];
+        // Leer como array de arrays para detectar fila de encabezado real
+        const rawData=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+        if(!rawData.length) return;
+        // Buscar la fila que tiene más celdas con texto (esa es la de encabezados)
+        let filaHeader=0;
+        let maxCeldas=0;
+        rawData.slice(0,20).forEach((fila,i)=>{
+          const celdasConTexto=fila.filter(c=>c&&String(c).trim().length>0&&String(c).trim().length<50).length;
+          if(celdasConTexto>maxCeldas){ maxCeldas=celdasConTexto; filaHeader=i; }
+        });
+        // Leer desde esa fila como encabezado
+        const headers=rawData[filaHeader].map((h,i)=>h&&String(h).trim()?String(h).trim():`Col_${i+1}`);
+        const filas=rawData.slice(filaHeader+1)
+          .filter(fila=>fila.some(c=>c!==null&&c!==undefined&&c!==''))
+          .map(fila=>{
+            const obj={'_hoja_':nombreHoja};
+            headers.forEach((h,i)=>{ obj[h]=fila[i]!==undefined&&fila[i]!==null?String(fila[i]).trim():''; });
+            return obj;
+          })
+          .filter(obj=>Object.entries(obj).some(([k,v])=>k!=='_hoja_'&&v));
+        if(!filas.length) return;
+        todasLasFilas=todasLasFilas.concat(filas);
+        hojasLeidas.push(`${nombreHoja} (${filas.length})`);
+      });
+      if(!todasLasFilas.length){st.className='upload-status show err';st.innerHTML='❌ El archivo está vacío o no tiene datos.';return;}
+      st.innerHTML=`⏳ ${wb.SheetNames.length} hojas leídas: ${hojasLeidas.join(', ')}`;
+      procesarYMapear(todasLasFilas,modo,file.name,st,wb.SheetNames);
     } catch(err){st.className='upload-status show err';st.innerHTML='❌ Error Excel: '+err.message;}
   };
   r.readAsArrayBuffer(file);
@@ -1037,17 +1067,14 @@ function parseCSV(text){
   }).filter(r=>Object.values(r).some(v=>v));
 }
 
-function procesarYMapear(rows, modo, nombre, st){
+function procesarYMapear(rows, modo, nombre, st, hojas){
   if(!rows.length){st.className='upload-status show err';st.innerHTML='❌ El archivo está vacío.';return;}
-  const headers = Object.keys(rows[0]);
+  const headers = Object.keys(rows[0]).filter(h=>h!=='_hoja_');
   const mapaAuto = autoDetectarMapeo(headers);
-  const sinMapear = CAMPOS_SISTEMA.filter(c=>c.obligatorio && !mapaAuto[c.key]);
-
   // Guardar contexto para cuando el usuario confirme
-  _mapeoCtx = { rows, modo, nombre };
-
+  _mapeoCtx = { rows, modo, nombre, hojas: hojas||[] };
   // Mostrar modal de mapeo
-  abrirMapeo(headers, mapaAuto, rows.slice(0,3), nombre);
+  abrirMapeo(headers, mapaAuto, rows.slice(0,3), nombre, hojas);
   st.className='upload-status show loading';
   st.innerHTML=`🗂️ Revisá el mapeo de columnas para "${nombre}" y confirmá.`;
 }
@@ -1132,19 +1159,53 @@ function getValMapeado(row, key, mapa){
 function importarFilas(rows, modo, nombre, mapa){
   const st=document.getElementById('uploadStatus');
   if(!rows.length){st.className='upload-status show err';st.innerHTML='❌ El archivo está vacío.';return;}
-  const nuevos=rows.map(row=>({
-    codigo:getValMapeado(row,'codigo',mapa).toString().trim()||('IMP-'+Math.random().toString(36).slice(2,6).toUpperCase()),
-    descripcion:getValMapeado(row,'descripcion',mapa).toString().trim(),
-    marca:getValMapeado(row,'marca',mapa).toString().trim(),
-    modelo:getValMapeado(row,'modelo',mapa).toString().trim(),
-    anio_desde:getValMapeado(row,'anio_desde',mapa).toString().trim(),
-    anio_hasta:getValMapeado(row,'anio_hasta',mapa).toString().trim(),
-    cilindrada:getValMapeado(row,'cilindrada',mapa).toString().trim(),
-    categoria:getValMapeado(row,'categoria',mapa).toString().trim()||'Otro',
-    precio:Number(getValMapeado(row,'precio',mapa))||0,
-    stock:(()=>{const v=getValMapeado(row,'stock',mapa).toString().toLowerCase();return (v==='1'||v==='si'||v==='sí'||v==='yes'||v==='disponible'||v==='true')?1:0;})(),
-    emoji:getValMapeado(row,'emoji',mapa).toString().trim()||'🔧'
-  })).filter(p=>p.descripcion||p.marca);
+  const nuevos=rows.map(row=>{
+    // Usar nombre de hoja como categoría si no hay columna categoría mapeada
+    const catMapeada=getValMapeado(row,'categoria',mapa).toString().trim();
+    const categoria=catMapeada||(row['_hoja_']?String(row['_hoja_']).trim():'Otro');
+    // Stock: si es número > 0 = disponible, si es 0 = sin stock, si es texto sí/no
+    const stockRaw=getValMapeado(row,'stock',mapa).toString().toLowerCase().trim();
+    const stockNum=Number(stockRaw);
+    const stock=(!isNaN(stockNum)&&stockNum>0)||(stockRaw==='si'||stockRaw==='sí'||stockRaw==='yes'||stockRaw==='disponible'||stockRaw==='true')?1:0;
+    // Modelo: limpiar texto largo, quedarse con primera línea significativa
+    const modeloRaw=getValMapeado(row,'modelo',mapa).toString().trim();
+    const modelo=modeloRaw.split('\n')[0].trim().slice(0,120);
+    return {
+      codigo:getValMapeado(row,'codigo',mapa).toString().trim()||('IMP-'+Math.random().toString(36).slice(2,6).toUpperCase()),
+      descripcion:getValMapeado(row,'descripcion',mapa).toString().trim(),
+      marca:getValMapeado(row,'marca',mapa).toString().trim(),
+      modelo,
+      anio_desde:getValMapeado(row,'anio_desde',mapa).toString().trim(),
+      anio_hasta:getValMapeado(row,'anio_hasta',mapa).toString().trim(),
+      cilindrada:getValMapeado(row,'cilindrada',mapa).toString().trim(),
+      categoria,
+      precio:Number(getValMapeado(row,'precio',mapa))||0,
+      stock,
+      emoji:getValMapeado(row,'emoji',mapa).toString().trim()||'🔧'
+    };
+  }).filter(p=>p.descripcion||p.marca);
+
+  if(modo==='reemplazar'){
+    openConfirm('⚠️ ¿Reemplazar TODOS los productos?',
+      `Se eliminarán los ${APP.productos.length} productos actuales y se cargarán los ${nuevos.length} de "${nombre}". Esta acción no se puede deshacer.`,
+      ()=>{
+        APP.productos=nuevos; save(); renderAdminTable(''); actualizarStats();
+        st.className='upload-status show ok';
+        st.innerHTML=`✅ ¡Listo! ${nuevos.length} productos cargados desde "${nombre}"`;
+        showToast(`✅ ${nuevos.length} productos importados`);
+      });
+  } else {
+    let added=0,updated=0;
+    nuevos.forEach(np=>{
+      const idx=APP.productos.findIndex(p=>p.codigo===np.codigo&&np.codigo);
+      if(idx>=0){APP.productos[idx]=np;updated++;}else{APP.productos.push(np);added++;}
+    });
+    save(); renderAdminTable(''); actualizarStats();
+    st.className='upload-status show ok';
+    st.innerHTML=`✅ "${nombre}": <strong>${added}</strong> nuevos, <strong>${updated}</strong> actualizados.`;
+    showToast(`✅ ${added} nuevos + ${updated} actualizados`);
+  }
+}
 
   if(modo==='reemplazar'){
     openConfirm('⚠️ ¿Reemplazar TODOS los productos?',
