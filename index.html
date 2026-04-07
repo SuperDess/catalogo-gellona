@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gellona Hermanos — Catálogo de Repuestos</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --rojo: #e63329;
+  --rojo-dark: #b81f16;
+  --negro: #0f0f0f;
+  --gris-dark: #1c1c1e;
+  --gris-mid: #2c2c2e;
+  --gris-light: #3a3a3c;
+  --texto: #f5f5f5;
+  --texto-dim: #a0a0a0;
+  --borde: #333;
+  --verde: #30d158;
+  --amarillo: #ffd60a;
+  --azul: #0a84ff;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--negro); color:var(--texto); font-family:'Barlow',sans-serif; min-height:100vh; }
+
+.screen { display:none; min-height:100vh; }
+.screen.active { display:flex; flex-direction:column; }
+
+/* LOGIN */
+#loginScreen { background:linear-gradient(135deg,#0f0f0f 0%,#1a0505 50%,#0f0f0f 100%); align-items:center; justify-content:center; }
+.login-box { background:var(--gris-dark); border:1px solid #333; border-top:3px solid var(--rojo); padding:48px 40px; width:100%; max-width:420px; border-radius:4px; }
+.login-logo { text-align:center; margin-bottom:32px; }
+.login-logo .brand { font-family:'Barlow Condensed',sans-serif; font-size:2.4rem; font-weight:900; letter-spacing:2px; color:#fff; }
+.login-logo .brand span { color:var(--rojo); }
+.login-logo p { color:var(--texto-dim); font-size:0.85rem; margin-top:4px; letter-spacing:1px; text-transform:uppercase; }
+.login-tabs { display:flex; background:var(--gris-mid); border-radius:3px; padding:3px; margin-bottom:28px; }
+.login-tab { flex:1; padding:8px; text-align:center; font-size:0.85rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; cursor:pointer; border-radius:2px; transition:all 0.2s; color:var(--texto-dim); }
+.login-tab.active { background:var(--rojo); color:#fff; }
+.form-group { margin-bottom:18px; }
+.form-group label { display:block; font-size:0.78rem; letter-spacing:1px; text-transform:uppercase; color:var(--texto-dim); margin-bottom:6px; }
+.form-group input, .form-group select, .form-group textarea { width:100%; padding:12px 14px; background:var(--gris-mid); border:1px solid var(--borde); border-radius:3px; color:var(--texto); font-family:'Barlow',sans-serif; font-size:0.95rem; transition:border 0.2s; outline:none; }
+.form-group input:focus, .form-group select:focus { border-color:var(--rojo); }
+.btn-primary { width:100%; padding:14px; background:var(--rojo); border:none; color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:1.1rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; cursor:pointer; border-radius:3px; transition:background 0.2s; }
+.btn-primary:hover { background:var(--rojo-dark); }
+.login-error { background:#3d0a07; border:1px solid var(--rojo); color:#ff6b65; padding:10px 14px; border-radius:3px; font-size:0.85rem; margin-bottom:16px; display:none; }
+.login-hint { text-align:center; margin-top:16px; font-size:0.8rem; color:var(--texto-dim); }
+
+/* ADMIN */
+#adminScreen { background:var(--negro); flex-direction:column; }
+.admin-header { background:var(--gris-dark); border-bottom:2px solid var(--rojo); padding:14px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+.admin-header .brand { font-family:'Barlow Condensed',sans-serif; font-size:1.6rem; font-weight:900; letter-spacing:2px; }
+.admin-header .brand span { color:var(--rojo); }
+.admin-badge { background:var(--rojo); color:#fff; font-size:0.7rem; font-weight:700; letter-spacing:1px; padding:3px 8px; border-radius:2px; text-transform:uppercase; margin-left:8px; }
+.admin-nav { display:flex; gap:4px; flex-wrap:wrap; }
+.admin-nav-btn { padding:8px 16px; background:transparent; border:1px solid var(--borde); color:var(--texto-dim); font-family:'Barlow',sans-serif; font-size:0.82rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; cursor:pointer; border-radius:3px; transition:all 0.2s; }
+.admin-nav-btn:hover, .admin-nav-btn.active { background:var(--rojo); border-color:var(--rojo); color:#fff; }
+.admin-nav-btn.exit:hover { background:#222; border-color:#555; color:#fff; }
+.admin-content { flex:1; padding:28px 24px; overflow:auto; }
+
+/* STATS */
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:16px; margin-bottom:32px; }
+.stat-card { background:var(--gris-dark); border:1px solid var(--borde); border-radius:4px; padding:20px; border-left:3px solid var(--rojo); }
+.stat-card .num { font-family:'Barlow Condensed',sans-serif; font-size:2.4rem; font-weight:800; color:#fff; }
+.stat-card .lbl { font-size:0.75rem; color:var(--texto-dim); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+.stat-card.verde { border-left-color:var(--verde); }
+.stat-card.azul { border-left-color:var(--azul); }
+.stat-card.amarillo { border-left-color:var(--amarillo); }
+
+.admin-panel { display:none; }
+.admin-panel.active { display:block; }
+.panel-title { font-family:'Barlow Condensed',sans-serif; font-size:1.6rem; font-weight:800; letter-spacing:2px; text-transform:uppercase; margin-bottom:20px; color:#fff; border-bottom:1px solid var(--borde); padding-bottom:12px; }
+.panel-title span { color:var(--rojo); }
+
+/* UPLOAD */
+.upload-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:28px; }
+@media(max-width:640px){ .upload-grid{grid-template-columns:1fr;} }
+.upload-card { background:var(--gris-dark); border:2px dashed var(--borde); border-radius:6px; padding:32px 24px; text-align:center; cursor:pointer; transition:all 0.25s; }
+.upload-card:hover { border-color:var(--rojo); background:#1f1010; }
+.upload-card.danger-border { border-color:#552222; }
+.upload-card.danger-border:hover { border-color:var(--rojo); }
+.upload-card.dragover { border-color:var(--rojo); background:#1f1010; transform:scale(1.02); }
+.upload-icon { font-size:2.8rem; margin-bottom:12px; }
+.upload-card h3 { font-family:'Barlow Condensed',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:1px; margin-bottom:6px; }
+.upload-card p { font-size:0.82rem; color:var(--texto-dim); line-height:1.6; }
+.upload-card input[type=file] { display:none; }
+.upload-status { background:var(--gris-mid); border:1px solid var(--borde); border-radius:4px; padding:14px 18px; margin-bottom:20px; font-size:0.9rem; display:none; align-items:center; gap:10px; }
+.upload-status.show { display:flex; }
+.upload-status.ok { border-color:var(--verde); color:var(--verde); }
+.upload-status.err { border-color:var(--rojo); color:#ff6b65; }
+.upload-status.loading { border-color:var(--azul); color:var(--azul); }
+
+/* FORMS */
+.form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin-bottom:18px; }
+.form-grid .form-group { margin-bottom:0; }
+.btn-add { padding:12px 28px; background:var(--rojo); border:none; color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; cursor:pointer; border-radius:3px; transition:background 0.2s; }
+.btn-add:hover { background:var(--rojo-dark); }
+.btn-danger { padding:6px 12px; background:transparent; border:1px solid #e63329; color:#e63329; font-size:0.78rem; font-weight:600; cursor:pointer; border-radius:3px; transition:all 0.2s; }
+.btn-danger:hover { background:#e63329; color:#fff; }
+.btn-edit { padding:6px 12px; background:transparent; border:1px solid #555; color:#aaa; font-size:0.78rem; font-weight:600; cursor:pointer; border-radius:3px; transition:all 0.2s; }
+.btn-edit:hover { border-color:#fff; color:#fff; }
+
+/* TABLA */
+.table-wrap { overflow-x:auto; }
+.admin-table { width:100%; border-collapse:collapse; font-size:0.87rem; }
+.admin-table th { background:var(--gris-mid); padding:10px 12px; text-align:left; font-size:0.74rem; letter-spacing:1px; text-transform:uppercase; color:var(--texto-dim); border-bottom:1px solid var(--borde); }
+.admin-table td { padding:10px 12px; border-bottom:1px solid #222; vertical-align:middle; }
+.admin-table tr:hover td { background:#1a1a1a; }
+.admin-table .actions { display:flex; gap:6px; }
+.stock-badge { padding:3px 8px; border-radius:2px; font-size:0.74rem; font-weight:700; letter-spacing:1px; }
+.stock-badge.in { background:#0d3320; color:var(--verde); }
+.stock-badge.out { background:#3d0a07; color:#ff6b65; }
+.search-admin { width:100%; padding:10px 14px; background:var(--gris-mid); border:1px solid var(--borde); border-radius:3px; color:var(--texto); font-size:0.9rem; margin-bottom:16px; font-family:'Barlow',sans-serif; outline:none; }
+.search-admin:focus { border-color:var(--rojo); }
+
+/* USUARIOS */
+.user-card { background:var(--gris-dark); border:1px solid var(--borde); border-radius:4px; padding:16px 18px; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:10px; }
+.user-badge { font-size:0.72rem; padding:3px 8px; border-radius:2px; font-weight:700; letter-spacing:1px; }
+.user-badge.admin { background:#3d0a07; color:var(--rojo); }
+.user-badge.cliente { background:#0d2033; color:var(--azul); }
+.btn-small { padding:5px 12px; font-size:0.78rem; border-radius:2px; cursor:pointer; border:1px solid var(--borde); background:transparent; color:var(--texto-dim); transition:all 0.2s; }
+.btn-small:hover { border-color:#fff; color:#fff; }
+
+/* CATÁLOGO */
+#catalogScreen { background:var(--negro); }
+.cat-header { background:var(--gris-dark); border-bottom:2px solid var(--rojo); padding:0 24px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; position:sticky; top:0; z-index:100; }
+.cat-header .brand { font-family:'Barlow Condensed',sans-serif; font-size:1.8rem; font-weight:900; letter-spacing:3px; padding:14px 0; }
+.cat-header .brand span { color:var(--rojo); }
+.cat-header .user-info-top { margin-left:auto; font-size:0.82rem; color:var(--texto-dim); display:flex; align-items:center; gap:12px; }
+.cat-header .user-info-top strong { color:#fff; }
+.btn-logout { padding:6px 14px; background:transparent; border:1px solid #444; color:var(--texto-dim); font-size:0.8rem; cursor:pointer; border-radius:3px; transition:all 0.2s; }
+.btn-logout:hover { border-color:#fff; color:#fff; }
+
+/* SEARCH */
+.search-section { background:#111; border-bottom:1px solid var(--borde); padding:20px 24px; }
+.search-main { display:flex; gap:8px; margin-bottom:14px; }
+.search-input-wrap { flex:1; position:relative; }
+.search-input-wrap input { width:100%; padding:14px 18px 14px 48px; background:var(--gris-dark); border:1px solid var(--borde); border-radius:4px; color:var(--texto); font-size:1rem; font-family:'Barlow',sans-serif; outline:none; transition:all 0.2s; }
+.search-input-wrap input:focus { border-color:var(--rojo); background:#1f1010; }
+.search-icon { position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:1.1rem; color:var(--texto-dim); }
+.btn-search { padding:14px 28px; background:var(--rojo); border:none; color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:1rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; cursor:pointer; border-radius:4px; transition:background 0.2s; white-space:nowrap; }
+.btn-search:hover { background:var(--rojo-dark); }
+.filters-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; }
+.filter-select { padding:9px 12px; background:var(--gris-dark); border:1px solid var(--borde); border-radius:3px; color:var(--texto); font-family:'Barlow',sans-serif; font-size:0.88rem; outline:none; cursor:pointer; transition:border 0.2s; width:100%; }
+.filter-select:focus { border-color:var(--rojo); }
+.btn-clear { padding:9px 16px; background:transparent; border:1px solid #444; color:var(--texto-dim); font-size:0.82rem; cursor:pointer; border-radius:3px; transition:all 0.2s; white-space:nowrap; }
+.btn-clear:hover { border-color:#fff; color:#fff; }
+.results-info { padding:10px 24px; font-size:0.82rem; color:var(--texto-dim); background:#111; border-bottom:1px solid var(--borde); }
+.results-info strong { color:var(--rojo); }
+
+/* PRODUCTS */
+.products-section { padding:24px; flex:1; }
+.products-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:16px; }
+.product-card { background:var(--gris-dark); border:1px solid var(--borde); border-radius:4px; overflow:hidden; transition:transform 0.2s, border-color 0.2s; }
+.product-card:hover { transform:translateY(-3px); border-color:#555; }
+.product-card-img { height:150px; background:var(--gris-mid); display:flex; align-items:center; justify-content:center; font-size:3.5rem; position:relative; }
+.product-card-img .cat-label { position:absolute; top:8px; left:8px; background:var(--rojo); color:#fff; font-size:0.7rem; font-weight:700; letter-spacing:1px; padding:3px 8px; border-radius:2px; text-transform:uppercase; }
+.product-card-body { padding:16px; }
+.product-card-body h3 { font-family:'Barlow Condensed',sans-serif; font-size:1.1rem; font-weight:700; letter-spacing:0.5px; margin-bottom:6px; color:#fff; line-height:1.2; }
+.product-meta { font-size:0.8rem; color:var(--texto-dim); margin-bottom:10px; line-height:1.7; }
+.product-meta span { color:#aaa; }
+.product-price { font-family:'Barlow Condensed',sans-serif; font-size:1.6rem; font-weight:800; color:var(--amarillo); margin-bottom:4px; }
+.product-price small { font-size:0.8rem; color:var(--texto-dim); font-family:'Barlow',sans-serif; font-weight:400; }
+.product-code { font-size:0.75rem; color:#555; margin-bottom:12px; letter-spacing:1px; }
+.product-footer { display:flex; gap:8px; align-items:center; justify-content:space-between; }
+.btn-wsp { flex:1; padding:10px; background:#25D366; border:none; color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:0.95rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; cursor:pointer; border-radius:3px; transition:background 0.2s; display:flex; align-items:center; justify-content:center; gap:6px; }
+.btn-wsp:hover { background:#1aad54; }
+.btn-cart { padding:10px 14px; background:transparent; border:1px solid var(--borde); color:var(--texto-dim); cursor:pointer; border-radius:3px; transition:all 0.2s; font-size:1rem; }
+.btn-cart:hover { border-color:var(--rojo); color:var(--rojo); }
+.stock-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:4px; }
+.stock-dot.in { background:var(--verde); }
+.stock-dot.out { background:#e63329; }
+.no-results { grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--texto-dim); }
+.no-results .icon { font-size:3rem; margin-bottom:12px; }
+.no-results h3 { font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; margin-bottom:6px; color:#fff; }
+
+/* CARRITO FLOTANTE */
+.cart-float { position:fixed; bottom:24px; right:24px; background:var(--rojo); color:#fff; border:none; width:56px; height:56px; border-radius:50%; font-size:1.4rem; cursor:pointer; z-index:200; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(230,51,41,0.5); transition:transform 0.2s; }
+.cart-float:hover { transform:scale(1.1); }
+.cart-count { position:absolute; top:-4px; right:-4px; background:var(--amarillo); color:#000; width:20px; height:20px; border-radius:50%; font-size:0.7rem; font-weight:800; display:flex; align-items:center; justify-content:center; }
+
+/* MODALES */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:300; align-items:center; justify-content:center; padding:20px; }
+.modal-overlay.open { display:flex; }
+.modal-box { background:var(--gris-dark); border:1px solid var(--borde); border-top:3px solid var(--rojo); border-radius:4px; width:100%; max-width:520px; max-height:85vh; display:flex; flex-direction:column; }
+.modal-box.wide { max-width:680px; }
+.modal-header { padding:18px 22px; border-bottom:1px solid var(--borde); display:flex; align-items:center; justify-content:space-between; }
+.modal-header h2 { font-family:'Barlow Condensed',sans-serif; font-size:1.3rem; font-weight:700; letter-spacing:1px; }
+.btn-close { background:transparent; border:none; color:var(--texto-dim); font-size:1.4rem; cursor:pointer; }
+.modal-body { flex:1; overflow-y:auto; padding:18px 22px; }
+.cart-item { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid #222; align-items:center; }
+.cart-item:last-child { border-bottom:none; }
+.cart-item-emoji { font-size:1.8rem; }
+.cart-item-info { flex:1; }
+.cart-item-info strong { font-size:0.95rem; display:block; }
+.cart-item-info small { color:var(--texto-dim); font-size:0.8rem; }
+.cart-item-price { font-family:'Barlow Condensed',sans-serif; font-size:1.1rem; color:var(--amarillo); font-weight:700; }
+.cart-item-del { background:transparent; border:none; color:#555; cursor:pointer; font-size:1rem; transition:color 0.2s; }
+.cart-item-del:hover { color:var(--rojo); }
+.modal-footer { padding:18px 22px; border-top:1px solid var(--borde); }
+.cart-total { font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; font-weight:800; margin-bottom:14px; }
+.cart-total span { color:var(--amarillo); }
+.btn-wsp-full { width:100%; padding:14px; background:#25D366; border:none; color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:1.1rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; cursor:pointer; border-radius:3px; transition:background 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.btn-wsp-full:hover { background:#1aad54; }
+.confirm-box { background:var(--gris-dark); border:1px solid #e63329; border-radius:4px; padding:32px; max-width:420px; width:100%; text-align:center; }
+.confirm-box h3 { font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; margin-bottom:10px; }
+.confirm-box p { color:var(--texto-dim); font-size:0.9rem; margin-bottom:24px; line-height:1.6; }
+.confirm-buttons { display:flex; gap:10px; justify-content:center; }
+.btn-confirm { padding:10px 24px; background:var(--rojo); border:none; color:#fff; font-weight:700; cursor:pointer; border-radius:3px; font-size:0.9rem; }
+.btn-cancel-c { padding:10px 24px; background:transparent; border:1px solid var(--borde); color:var(--texto-dim); cursor:pointer; border-radius:3px; font-size:0.9rem; }
+
+/* TOAST */
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--gris-dark); border:1px solid var(--verde); color:var(--verde); padding:12px 22px; border-radius:3px; font-size:0.88rem; font-weight:600; z-index:999; opacity:0; transition:opacity 0.3s; pointer-events:none; white-space:nowrap; }
+.toast.show { opacity:1; }
+.toast.error { border-color:var(--rojo); color:#ff6b65; }
+
+/* SECCION CARD */
+.section-card { background:var(--gris-dark); border:1px solid var(--borde); border-radius:4px; padding:20px; margin-bottom:24px; }
+.section-card h3 { font-family:'Barlow Condensed',sans-serif; font-size:1rem; letter-spacing:1px; text-transform:uppercase; margin-bottom:16px; color:#aaa; }
+
+/* BANNER OFERTA */
+.banner-oferta { display:none; margin:0; padding:18px 24px; position:relative; overflow:hidden; cursor:pointer; }
+.banner-oferta.visible { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.banner-oferta::before { content:''; position:absolute; inset:0; background:inherit; opacity:.12; }
+.banner-bg-pattern { position:absolute; right:-20px; top:-20px; font-size:7rem; opacity:.07; pointer-events:none; }
+.banner-texto-wrap { flex:1; position:relative; }
+.banner-titulo { font-family:'Barlow Condensed',sans-serif; font-size:1.5rem; font-weight:900; letter-spacing:2px; color:#fff; text-transform:uppercase; line-height:1; }
+.banner-sub { font-size:0.88rem; color:rgba(255,255,255,.85); margin-top:4px; }
+.banner-btn { position:relative; padding:9px 20px; background:rgba(255,255,255,.2); border:2px solid rgba(255,255,255,.6); color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:0.95rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; cursor:pointer; border-radius:3px; transition:all .2s; white-space:nowrap; }
+.banner-btn:hover { background:rgba(255,255,255,.35); }
+.banner-close { position:absolute; top:8px; right:10px; background:transparent; border:none; color:rgba(255,255,255,.6); font-size:1.1rem; cursor:pointer; line-height:1; transition:color .2s; }
+.banner-close:hover { color:#fff; }
+
+/* PREVIEW BANNER EN CONFIG */
+.banner-preview { border-radius:4px; padding:14px 18px; display:flex; align-items:center; gap:12px; position:relative; overflow:hidden; margin-top:12px; }
+.banner-preview .banner-titulo { font-size:1.1rem; }
+.banner-toggle { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.toggle-switch { position:relative; width:44px; height:24px; }
+.toggle-switch input { opacity:0; width:0; height:0; }
+.toggle-slider { position:absolute; inset:0; background:#333; border-radius:24px; cursor:pointer; transition:.3s; }
+.toggle-slider:before { content:''; position:absolute; width:18px; height:18px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
+.toggle-switch input:checked + .toggle-slider { background:var(--verde); }
+.toggle-switch input:checked + .toggle-slider:before { transform:translateX(20px); }
+
+@media(max-width:600px){ .banner-oferta.visible{flex-direction:column;align-items:flex-start;gap:10px;} }
+
+  .products-grid{grid-template-columns:1fr 1fr;gap:10px;}
+  .search-main{flex-direction:column;}
+  .filters-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:380px){
+  .products-grid{grid-template-columns:1fr;}
+}
+.color-opt { width:32px; height:32px; border-radius:4px; cursor:pointer; transition:transform .15s,box-shadow .15s; flex-shrink:0; }
+.color-opt:hover { transform:scale(1.15); }
+.color-opt.selected { box-shadow:0 0 0 3px #fff,0 0 0 5px #555; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="loginScreen" class="screen active">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="brand">GELLONA<span> HNOS</span></div>
+      <p>Catálogo de Repuestos</p>
+    </div>
+    <div class="login-tabs">
+      <div class="login-tab active" onclick="switchTab('cliente')">Cliente</div>
+      <div class="login-tab" onclick="switchTab('admin')">Administrador</div>
+    </div>
+    <div class="login-error" id="loginError">Usuario o contraseña incorrectos.</div>
+    <div class="form-group">
+      <label>Usuario</label>
+      <input type="text" id="loginUser" placeholder="Ingresa tu usuario" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Ingresar →</button>
+    <div class="login-hint" id="loginHint">¿Sin acceso? Contacta al administrador.</div>
+  </div>
+</div>
+
+<!-- ══════════════ ADMIN ══════════════ -->
+<div id="adminScreen" class="screen">
+  <div class="admin-header">
+    <div>
+      <span class="brand">GELLONA<span> HNOS</span></span>
+      <span class="admin-badge">Admin</span>
+    </div>
+    <div class="admin-nav">
+      <button class="admin-nav-btn active" onclick="adminTab('dashboard')">📊 Dashboard</button>
+      <button class="admin-nav-btn" onclick="adminTab('productos')">📦 Productos</button>
+      <button class="admin-nav-btn" onclick="adminTab('importar')">📥 Importar Excel</button>
+      <button class="admin-nav-btn" onclick="adminTab('usuarios')">👥 Clientes</button>
+      <button class="admin-nav-btn" onclick="adminTab('ventas')">📋 Ventas</button>
+      <button class="admin-nav-btn" onclick="adminTab('config')">⚙️ Config</button>
+      <button class="admin-nav-btn exit" onclick="doLogout()">✕ Salir</button>
+    </div>
+  </div>
+  <div class="admin-content">
+
+    <!-- DASHBOARD -->
+    <div class="admin-panel active" id="panel-dashboard">
+      <div class="panel-title">Panel <span>General</span></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="num" id="statTotal">0</div><div class="lbl">Repuestos totales</div></div>
+        <div class="stat-card verde"><div class="num" id="statStock">0</div><div class="lbl">En stock</div></div>
+        <div class="stat-card amarillo"><div class="num" id="statMarcas">0</div><div class="lbl">Marcas distintas</div></div>
+        <div class="stat-card azul"><div class="num" id="statUsuarios">0</div><div class="lbl">Clientes registrados</div></div>
+      </div>
+      <div class="panel-title">Accesos <span>Rápidos</span></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn-add" onclick="adminTab('importar')">📥 Importar Excel</button>
+        <button class="btn-add" style="background:var(--azul)" onclick="adminTab('productos')">📦 Ver Productos</button>
+        <button class="btn-add" style="background:#222;border:1px solid #444" onclick="adminTab('usuarios')">👥 Gestionar Clientes</button>
+      </div>
+    </div>
+
+    <!-- PRODUCTOS -->
+    <div class="admin-panel" id="panel-productos">
+      <div class="panel-title">Gestión de <span>Productos</span></div>
+      <div class="section-card">
+        <h3>+ Agregar Repuesto Manual</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>Código</label><input type="text" id="p_codigo" placeholder="BK-1234"></div>
+          <div class="form-group"><label>Descripción *</label><input type="text" id="p_desc" placeholder="Pastillas de freno delanteras"></div>
+          <div class="form-group"><label>Marca Vehículo *</label><input type="text" id="p_marca" placeholder="Toyota, Ford, Chevrolet..."></div>
+          <div class="form-group"><label>Modelo *</label><input type="text" id="p_modelo" placeholder="Corolla, Focus, Cruze..."></div>
+          <div class="form-group"><label>Año Desde</label><input type="text" id="p_anio_desde" placeholder="2018"></div>
+          <div class="form-group"><label>Año Hasta</label><input type="text" id="p_anio_hasta" placeholder="2023"></div>
+          <div class="form-group"><label>Cilindrada</label><input type="text" id="p_cc" placeholder="1.6, 2.0, 2.5"></div>
+          <div class="form-group"><label>Categoría</label>
+            <select id="p_cat">
+              <option>Frenos</option><option>Motor</option><option>Suspensión</option>
+              <option>Transmisión</option><option>Eléctrico</option><option>Filtros</option>
+              <option>Correas</option><option>Embrague</option><option>Carrocería</option><option>Otro</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Precio (CLP)</label><input type="number" id="p_precio" placeholder="15000"></div>
+          <div class="form-group"><label>Stock</label>
+            <select id="p_stock"><option value="1">Disponible</option><option value="0">Sin stock</option></select>
+          </div>
+          <div class="form-group"><label>Emoji</label><input type="text" id="p_emoji" placeholder="🔧" maxlength="4"></div>
+        </div>
+        <button class="btn-add" onclick="agregarProductoManual()">+ Agregar Repuesto</button>
+      </div>
+      <input class="search-admin" placeholder="🔍 Buscar en productos..." oninput="renderAdminTable(this.value)">
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead><tr>
+            <th>Código</th><th>Descripción</th><th>Marca</th><th>Modelo</th>
+            <th>Años</th><th>CC</th><th>Precio</th><th>Stock</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="adminTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- IMPORTAR -->
+    <div class="admin-panel" id="panel-importar">
+      <div class="panel-title">Importar desde <span>Excel / CSV</span></div>
+      <div class="upload-grid">
+        <div class="upload-card" id="dropAgregar" onclick="document.getElementById('fileAgregar').click()">
+          <div class="upload-icon">📥</div>
+          <h3>AGREGAR / ACTUALIZAR</h3>
+          <p>Agrega nuevos productos o actualiza los existentes (por código). <strong>No elimina</strong> los productos actuales.</p>
+          <input type="file" id="fileAgregar" accept=".xlsx,.xls,.csv" onchange="handleExcel(this,'agregar')">
+        </div>
+        <div class="upload-card danger-border" id="dropReemplazar" onclick="document.getElementById('fileReemplazar').click()">
+          <div class="upload-icon">🔄</div>
+          <h3>REEMPLAZAR TODO</h3>
+          <p><strong style="color:var(--rojo)">Elimina todos los productos actuales</strong> y carga solo los del nuevo archivo.</p>
+          <input type="file" id="fileReemplazar" accept=".xlsx,.xls,.csv" onchange="handleExcel(this,'reemplazar')">
+        </div>
+      </div>
+      <div class="upload-status" id="uploadStatus"></div>
+      <div class="section-card">
+        <h3>📋 Formato requerido del Excel / CSV</h3>
+        <p style="font-size:0.85rem;color:var(--texto-dim);margin-bottom:14px">La primera fila debe tener los nombres de columna (el orden no importa):</p>
+        <div class="table-wrap">
+          <table class="admin-table" style="font-size:0.82rem">
+            <thead><tr><th>Columna</th><th>Ejemplo</th><th>Obligatorio</th></tr></thead>
+            <tbody>
+              <tr><td><code style="color:#ffd60a">codigo</code></td><td>BK-1234</td><td>✅</td></tr>
+              <tr><td><code style="color:#ffd60a">descripcion</code></td><td>Pastillas de freno delanteras</td><td>✅</td></tr>
+              <tr><td><code style="color:#ffd60a">marca</code></td><td>Toyota</td><td>✅</td></tr>
+              <tr><td><code style="color:#ffd60a">modelo</code></td><td>Corolla</td><td>✅</td></tr>
+              <tr><td>anio_desde</td><td>2018</td><td>—</td></tr>
+              <tr><td>anio_hasta</td><td>2023</td><td>—</td></tr>
+              <tr><td>cilindrada</td><td>1.8</td><td>—</td></tr>
+              <tr><td>categoria</td><td>Frenos</td><td>—</td></tr>
+              <tr><td>precio</td><td>25000</td><td>—</td></tr>
+              <tr><td>stock</td><td>1 = disponible / 0 = sin stock</td><td>—</td></tr>
+              <tr><td>emoji</td><td>🔧</td><td>—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:0.8rem;color:var(--texto-dim);margin-top:14px">💡 Acepta <strong style="color:#fff">.xlsx</strong>, <strong style="color:#fff">.xls</strong> y <strong style="color:#fff">.csv</strong> (separado por coma o punto y coma).</p>
+        <p style="font-size:0.8rem;color:var(--texto-dim);margin-top:6px">💡 También acepta columnas alternativas: <em>description, nombre, brand, fabricante, model, vehiculo, year, anio, cc, motor, category, tipo, price, valor, available...</em></p>
+      </div>
+    </div>
+
+    <!-- USUARIOS -->
+    <div class="admin-panel" id="panel-usuarios">
+      <div class="panel-title">Gestión de <span>Clientes</span></div>
+      <div class="section-card">
+        <h3>+ Nuevo Cliente</h3>
+        <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+          <div class="form-group"><label>Nombre completo</label><input type="text" id="u_nombre" placeholder="Juan Pérez"></div>
+          <div class="form-group"><label>Usuario</label><input type="text" id="u_user" placeholder="juanp"></div>
+          <div class="form-group"><label>Contraseña</label><input type="password" id="u_pass" placeholder="••••••••"></div>
+          <div class="form-group"><label>Teléfono</label><input type="text" id="u_tel" placeholder="+56912345678"></div>
+        </div>
+        <button class="btn-add" onclick="agregarUsuario()">+ Crear Cliente</button>
+      </div>
+      <div id="usuariosList"></div>
+    </div>
+
+    <!-- CONFIG -->
+    <div class="admin-panel" id="panel-config">
+      <div class="panel-title"><span>Configuración</span> del Sistema</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;flex-wrap:wrap">
+
+      <div class="section-card" style="margin-bottom:0">
+        <h3>⚙️ General</h3>
+        <div class="form-group"><label>Nombre del negocio</label><input type="text" id="conf_nombre" value="Gellona Hermanos"></div>
+        <div class="form-group">
+          <label>Número WhatsApp (con código país, sin espacios)</label>
+          <input type="text" id="conf_wsp" placeholder="+56912345678">
+        </div>
+        <div class="form-group">
+          <label>Mensaje predeterminado de pedido</label>
+          <input type="text" id="conf_msg" value="Hola! Quiero cotizar este repuesto:">
+        </div>
+        <div class="form-group"><label>Nueva contraseña Admin (dejar vacío para no cambiar)</label><input type="password" id="conf_pass" placeholder="Nueva contraseña"></div>
+        <button class="btn-add" onclick="guardarConfig()">💾 Guardar Configuración</button>
+      </div>
+
+      <!-- BANNER CONFIG -->
+      <div class="section-card" style="margin-bottom:0">
+        <h3>📢 Banner de Oferta</h3>
+        <div class="banner-toggle">
+          <label class="toggle-switch">
+            <input type="checkbox" id="conf_banner_activo" onchange="previsualizarBanner()">
+            <span class="toggle-slider"></span>
+          </label>
+          <span style="font-size:0.88rem;color:#aaa">Mostrar banner en el catálogo</span>
+        </div>
+        <div class="form-group">
+          <label>Título del banner</label>
+          <input type="text" id="conf_banner_titulo" placeholder="🔥 OFERTA ESPECIAL" oninput="previsualizarBanner()">
+        </div>
+        <div class="form-group">
+          <label>Subtítulo / descripción</label>
+          <input type="text" id="conf_banner_sub" placeholder="Hasta 30% de descuento en frenos este mes" oninput="previsualizarBanner()">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Texto del botón</label>
+            <input type="text" id="conf_banner_btn" placeholder="Ver ofertas" oninput="previsualizarBanner()">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Filtrar por categoría</label>
+            <input type="text" id="conf_banner_filtro" placeholder="Frenos, Motor..." oninput="previsualizarBanner()">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:10px">
+          <label>Color del banner</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+            <div class="color-opt" style="background:#e63329" onclick="selColor('#e63329')" title="Rojo"></div>
+            <div class="color-opt" style="background:#0a84ff" onclick="selColor('#0a84ff')" title="Azul"></div>
+            <div class="color-opt" style="background:#30d158" onclick="selColor('#30d158')" title="Verde"></div>
+            <div class="color-opt" style="background:#ff9f0a" onclick="selColor('#ff9f0a')" title="Naranja"></div>
+            <div class="color-opt" style="background:#af52de" onclick="selColor('#af52de')" title="Púrpura"></div>
+            <div class="color-opt" style="background:#1c1c1e;border:1px solid #555" onclick="selColor('#1c1c1e')" title="Oscuro"></div>
+            <input type="color" id="conf_banner_color" value="#e63329" oninput="selColor(this.value)" style="width:32px;height:32px;padding:2px;background:#2c2c2e;border:1px solid #444;border-radius:4px;cursor:pointer">
+          </div>
+        </div>
+        <p style="font-size:0.75rem;color:#555;text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px">Vista previa</p>
+        <div class="banner-preview" id="bannerPreview" style="background:#e63329">
+          <div style="flex:1"><div class="banner-titulo" id="prevTitulo">🔥 OFERTA ESPECIAL</div><div class="banner-sub" id="prevSub">Hasta 30% de descuento en frenos este mes</div></div>
+          <div style="padding:7px 14px;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.6);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;border-radius:3px" id="prevBtn">Ver ofertas</div>
+        </div>
+        <button class="btn-add" style="margin-top:14px;width:100%" onclick="guardarBanner()">💾 Guardar Banner</button>
+      </div>
+
+      </div><!-- end grid -->
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════ CATÁLOGO CLIENTE ══════════════ -->
+<div id="catalogScreen" class="screen">
+  <div class="cat-header">
+    <div class="brand">GELLONA<span> HNOS</span></div>
+    <div class="user-info-top">
+      <span>Hola, <strong id="welcomeName"></strong></span>
+      <button class="btn-logout" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <!-- BANNER OFERTA -->
+  <div class="banner-oferta" id="bannerOferta" onclick="bannerClick()">
+    <div class="banner-bg-pattern">🔥</div>
+    <div class="banner-texto-wrap">
+      <div class="banner-titulo" id="bannerTitulo">🔥 OFERTA ESPECIAL</div>
+      <div class="banner-sub" id="bannerSub">Hasta 30% de descuento en frenos este mes</div>
+    </div>
+    <button class="banner-btn" id="bannerBtn" onclick="event.stopPropagation();bannerClick()">Ver ofertas</button>
+    <button class="banner-close" onclick="event.stopPropagation();cerrarBanner()" title="Cerrar">✕</button>
+  </div>
+  <div class="search-section">
+    <div class="search-main">
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchMain" placeholder="Buscar por descripción, código, categoría..." oninput="filtrar()">
+      </div>
+      <button class="btn-search" onclick="filtrar()">Buscar</button>
+      <button class="btn-clear" onclick="limpiarFiltros()">✕ Limpiar</button>
+    </div>
+    <div class="filters-grid">
+      <select class="filter-select" id="fMarca" onchange="filtrar()"><option value="">Todas las marcas</option></select>
+      <select class="filter-select" id="fModelo" onchange="filtrar()"><option value="">Todos los modelos</option></select>
+      <select class="filter-select" id="fAnio" onchange="filtrar()"><option value="">Todos los años</option></select>
+      <select class="filter-select" id="fCilindrada" onchange="filtrar()"><option value="">Todas las cilindradas</option></select>
+      <select class="filter-select" id="fCategoria" onchange="filtrar()"><option value="">Todas las categorías</option></select>
+      <select class="filter-select" id="fStock" onchange="filtrar()">
+        <option value="">Todo (stock)</option>
+        <option value="1">Solo con stock</option>
+        <option value="0">Sin stock</option>
+      </select>
+    </div>
+  </div>
+  <div class="results-info" id="resultsInfo">Cargando...</div>
+  <div class="products-section">
+    <div class="products-grid" id="productsGrid"></div>
+  </div>
+  <footer style="text-align:center;padding:28px 16px 32px;border-top:1px solid #222;margin-top:24px;">
+    <p style="font-size:0.78rem;color:#555;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Plataforma desarrollada por</p>
+    <a href="https://wa.me/56987855129" target="_blank" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:#25D366;font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:1px;transition:opacity 0.2s;" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Happy Auto &nbsp;·&nbsp; +56 9 8785 5129
+    </a>
+  </footer>
+</div>
+
+<!-- Carrito flotante -->
+<button class="cart-float" onclick="openCart()" id="cartFloat" style="display:none">
+  🛒<span class="cart-count" id="cartCount">0</span>
+</button>
+
+<!-- Modal carrito -->
+<div class="modal-overlay" id="cartModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>🛒 Mi Pedido</h2>
+      <button class="btn-close" onclick="closeCart()">✕</button>
+    </div>
+    <div class="modal-body" id="cartBody"></div>
+    <div class="modal-footer">
+      <div class="cart-total">Total estimado: <span id="cartTotal">$0</span></div>
+      <button class="btn-wsp-full" onclick="pedirCarritoWsp()">📲 Enviar pedido por WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal editar producto -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box wide">
+    <div class="modal-header">
+      <h2>✏️ Editar Repuesto</h2>
+      <button class="btn-close" onclick="closeEdit()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit_idx">
+      <div class="form-grid">
+        <div class="form-group"><label>Código</label><input type="text" id="edit_codigo"></div>
+        <div class="form-group"><label>Descripción</label><input type="text" id="edit_desc"></div>
+        <div class="form-group"><label>Marca</label><input type="text" id="edit_marca"></div>
+        <div class="form-group"><label>Modelo</label><input type="text" id="edit_modelo"></div>
+        <div class="form-group"><label>Año Desde</label><input type="text" id="edit_anio_desde"></div>
+        <div class="form-group"><label>Año Hasta</label><input type="text" id="edit_anio_hasta"></div>
+        <div class="form-group"><label>Cilindrada</label><input type="text" id="edit_cc"></div>
+        <div class="form-group"><label>Categoría</label><input type="text" id="edit_cat"></div>
+        <div class="form-group"><label>Precio</label><input type="number" id="edit_precio"></div>
+        <div class="form-group"><label>Stock</label>
+          <select id="edit_stock"><option value="1">Disponible</option><option value="0">Sin stock</option></select>
+        </div>
+        <div class="form-group"><label>Emoji</label><input type="text" id="edit_emoji" maxlength="4"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-add" onclick="guardarEdicion()">💾 Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="confirm-box">
+    <h3 id="confirmTitle">¿Estás seguro?</h3>
+    <p id="confirmMsg"></p>
+    <div class="confirm-buttons">
+      <button class="btn-confirm" id="confirmOk">Confirmar</button>
+      <button class="btn-cancel-c" onclick="closeConfirm()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MAPEO DE COLUMNAS -->
+<div class="modal-overlay" id="mapeoModal">
+  <div class="modal-box wide" style="max-height:90vh;">
+    <div class="modal-header">
+      <h2>🗂️ Mapear Columnas del Excel</h2>
+      <button class="btn-close" onclick="cerrarMapeo()">✕</button>
+    </div>
+    <div class="modal-body" id="mapeoBody"></div>
+    <div class="modal-footer" style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn-cancel-c" onclick="cerrarMapeo()">Cancelar</button>
+      <button class="btn-add" onclick="confirmarMapeo()">✅ Importar con este mapeo</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════ ESTADO ═══════════════
+const APP = {
+  config: { nombre:'Gellona Hermanos', wsp:'+56900000000', adminPass:'admin123', msgPedido:'Hola! Quiero cotizar este repuesto:', vendedorNombre:'', vendedorCargo:'Ejecutivo de Ventas', vendedorTel:'', bannerActivo:false, bannerTexto:'🔥 OFERTA ESPECIAL', bannerSubtexto:'Hasta 30% de descuento en frenos este mes', bannerColor:'#e63329', bannerBtnTexto:'Ver ofertas', bannerBtnFiltro:'' },
+  ventas: [],
+  usuarios: [
+    {user:'admin', pass:'admin123', nombre:'Administrador', rol:'admin', tel:''},
+    {user:'cliente1', pass:'1234', nombre:'Cliente Demo', rol:'cliente', tel:'+56912345678'},
+  ],
+  productos: [
+    {codigo:'BK-001',descripcion:'Pastillas de freno delanteras EBC',marca:'Toyota',modelo:'Corolla',anio_desde:'2018',anio_hasta:'2023',cilindrada:'1.8',categoria:'Frenos',precio:24900,stock:1,emoji:'🔴'},
+    {codigo:'BK-002',descripcion:'Disco de freno ventilado 280mm',marca:'Ford',modelo:'Focus',anio_desde:'2016',anio_hasta:'2022',cilindrada:'2.0',categoria:'Frenos',precio:38500,stock:1,emoji:'⚙️'},
+    {codigo:'FT-001',descripcion:'Filtro de aceite premium Mann',marca:'Chevrolet',modelo:'Cruze',anio_desde:'2015',anio_hasta:'2022',cilindrada:'1.4',categoria:'Filtros',precio:8900,stock:1,emoji:'🟡'},
+    {codigo:'FT-002',descripcion:'Filtro de aire deportivo K&N',marca:'Honda',modelo:'Civic',anio_desde:'2017',anio_hasta:'2023',cilindrada:'1.5',categoria:'Filtros',precio:14500,stock:0,emoji:'💨'},
+    {codigo:'SP-001',descripcion:'Amortiguador delantero gas Bilstein',marca:'Volkswagen',modelo:'Golf',anio_desde:'2014',anio_hasta:'2021',cilindrada:'1.4',categoria:'Suspensión',precio:67000,stock:1,emoji:'🔩'},
+    {codigo:'SP-002',descripcion:'Buje de suspensión delantera',marca:'Hyundai',modelo:'Tucson',anio_desde:'2019',anio_hasta:'2023',cilindrada:'2.5',categoria:'Suspensión',precio:12300,stock:1,emoji:'🔧'},
+    {codigo:'TR-001',descripcion:'Kit de embrague completo LuK',marca:'Nissan',modelo:'Sentra',anio_desde:'2014',anio_hasta:'2020',cilindrada:'1.6',categoria:'Embrague',precio:145000,stock:1,emoji:'⚡'},
+    {codigo:'EL-001',descripcion:'Batería AGM 12V 60Ah Bosch',marca:'Kia',modelo:'Sportage',anio_desde:'2016',anio_hasta:'2023',cilindrada:'2.0',categoria:'Eléctrico',precio:89000,stock:0,emoji:'🔋'},
+  ],
+  carrito: [],
+  currentUser: null
+};
+
+// ═══════════════ UTILIDADES ═══════════════
+function showToast(msg, isErr=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast show'+(isErr?' error':'');
+  clearTimeout(t._t);
+  t._t=setTimeout(()=>t.className='toast',3000);
+}
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function fmtPrecio(n){ return n?'$'+Number(n).toLocaleString('es-CL'):'Consultar'; }
+function save(){ localStorage.setItem('ap_p',JSON.stringify(APP.productos)); localStorage.setItem('ap_u',JSON.stringify(APP.usuarios)); localStorage.setItem('ap_c',JSON.stringify(APP.config)); }
+function load(){
+  try {
+    const p=localStorage.getItem('ap_p'); if(p) APP.productos=JSON.parse(p);
+    const u=localStorage.getItem('ap_u'); if(u) APP.usuarios=JSON.parse(u);
+    const c=localStorage.getItem('ap_c'); if(c) APP.config={...APP.config,...JSON.parse(c)};
+  } catch(e){}
+}
+
+// ═══════════════ LOGIN ═══════════════
+let _loginRole='cliente';
+function switchTab(role){
+  _loginRole=role;
+  document.querySelectorAll('.login-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&role==='cliente')||(i===1&&role==='admin')));
+  document.getElementById('loginHint').textContent = role==='admin'?'Acceso exclusivo administrador.':'¿Sin cuenta? Contacta al administrador.';
+}
+function doLogin(){
+  const user=document.getElementById('loginUser').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const err=document.getElementById('loginError');
+  const found=APP.usuarios.find(u=>u.user===user&&u.pass===pass);
+  err.style.display='none';
+  if(!found){err.style.display='block';return;}
+  APP.currentUser=found;
+  if(found.rol==='admin'){
+    showScreen('adminScreen');
+    actualizarStats(); renderAdminTable(''); renderUsuarios(); cargarConfig();
+  } else {
+    showScreen('catalogScreen');
+    document.getElementById('welcomeName').textContent=found.nombre;
+    document.getElementById('cartFloat').style.display='flex';
+    renderBannerCatalogo(); poblarFiltros(); filtrar();
+  }
+}
+function doLogout(){
+  APP.currentUser=null; APP.carrito=[];
+  document.getElementById('cartCount').textContent='0';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  showScreen('loginScreen');
+}
+document.addEventListener('keypress',e=>{ if(e.key==='Enter') doLogin(); });
+
+// ═══════════════ ADMIN TABS ═══════════════
+function adminTab(tab){
+  document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  const tabs={dashboard:0,productos:1,importar:2,usuarios:3,config:4};
+  document.querySelectorAll('.admin-nav-btn').forEach((b,i)=>b.classList.remove('active'));
+  const idx=tabs[tab]; if(idx!==undefined){ document.querySelectorAll('.admin-nav-btn')[idx].classList.add('active'); }
+  if(tab==='productos') renderAdminTable('');
+  if(tab==='usuarios') renderUsuarios();
+  if(tab==='dashboard') actualizarStats();
+}
+
+// ═══════════════ STATS ═══════════════
+function actualizarStats(){
+  document.getElementById('statTotal').textContent=APP.productos.length;
+  document.getElementById('statStock').textContent=APP.productos.filter(p=>p.stock==1).length;
+  document.getElementById('statMarcas').textContent=new Set(APP.productos.map(p=>p.marca).filter(Boolean)).size;
+  document.getElementById('statUsuarios').textContent=APP.usuarios.filter(u=>u.rol==='cliente').length;
+}
+
+// ═══════════════ TABLA ADMIN ═══════════════
+function renderAdminTable(q){
+  const tbody=document.getElementById('adminTableBody');
+  const list=q?APP.productos.filter(p=>Object.values(p).join(' ').toLowerCase().includes(q.toLowerCase())):APP.productos;
+  if(!list.length){ tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--texto-dim);padding:32px">Sin productos. Agrega uno arriba o importa un Excel.</td></tr>'; return; }
+  tbody.innerHTML=list.map(p=>{
+    const ri=APP.productos.indexOf(p);
+    return `<tr>
+      <td style="font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;color:#aaa">${p.codigo||'—'}</td>
+      <td>${p.emoji||'🔧'} <strong>${p.descripcion}</strong></td>
+      <td>${p.marca}</td><td>${p.modelo}</td>
+      <td style="font-size:0.8rem;color:#aaa">${p.anio_desde||'—'}${p.anio_hasta?'–'+p.anio_hasta:''}</td>
+      <td>${p.cilindrada||'—'}</td>
+      <td style="color:var(--amarillo);font-weight:700">${fmtPrecio(p.precio)}</td>
+      <td><span class="stock-badge ${p.stock==1?'in':'out'}">${p.stock==1?'✔ OK':'✘ No'}</span></td>
+      <td><div class="actions"><button class="btn-edit" onclick="openEdit(${ri})">✏️</button><button class="btn-danger" onclick="eliminarProducto(${ri})">🗑</button></div></td>
+    </tr>`;
+  }).join('');
+}
+
+function agregarProductoManual(){
+  const p={
+    codigo:document.getElementById('p_codigo').value.trim(),
+    descripcion:document.getElementById('p_desc').value.trim(),
+    marca:document.getElementById('p_marca').value.trim(),
+    modelo:document.getElementById('p_modelo').value.trim(),
+    anio_desde:document.getElementById('p_anio_desde').value.trim(),
+    anio_hasta:document.getElementById('p_anio_hasta').value.trim(),
+    cilindrada:document.getElementById('p_cc').value.trim(),
+    categoria:document.getElementById('p_cat').value,
+    precio:Number(document.getElementById('p_precio').value)||0,
+    stock:Number(document.getElementById('p_stock').value),
+    emoji:document.getElementById('p_emoji').value||'🔧'
+  };
+  if(!p.descripcion||!p.marca||!p.modelo){showToast('Descripción, marca y modelo son obligatorios',true);return;}
+  APP.productos.push(p); save(); renderAdminTable(''); actualizarStats();
+  showToast('✅ Repuesto agregado');
+  ['p_codigo','p_desc','p_marca','p_modelo','p_anio_desde','p_anio_hasta','p_cc','p_precio','p_emoji'].forEach(id=>document.getElementById(id).value='');
+}
+
+function eliminarProducto(idx){
+  openConfirm('¿Eliminar repuesto?',`Se eliminará "${APP.productos[idx].descripcion}" de forma permanente.`,()=>{
+    APP.productos.splice(idx,1); save(); renderAdminTable(''); actualizarStats(); showToast('Repuesto eliminado');
+  });
+}
+
+// ═══════════════ EDITAR ═══════════════
+function openEdit(idx){
+  const p=APP.productos[idx];
+  document.getElementById('edit_idx').value=idx;
+  document.getElementById('edit_codigo').value=p.codigo||'';
+  document.getElementById('edit_desc').value=p.descripcion||'';
+  document.getElementById('edit_marca').value=p.marca||'';
+  document.getElementById('edit_modelo').value=p.modelo||'';
+  document.getElementById('edit_anio_desde').value=p.anio_desde||'';
+  document.getElementById('edit_anio_hasta').value=p.anio_hasta||'';
+  document.getElementById('edit_cc').value=p.cilindrada||'';
+  document.getElementById('edit_cat').value=p.categoria||'';
+  document.getElementById('edit_precio').value=p.precio||'';
+  document.getElementById('edit_stock').value=p.stock;
+  document.getElementById('edit_emoji').value=p.emoji||'🔧';
+  document.getElementById('editModal').classList.add('open');
+}
+function closeEdit(){document.getElementById('editModal').classList.remove('open');}
+function guardarEdicion(){
+  const idx=Number(document.getElementById('edit_idx').value);
+  APP.productos[idx]={
+    codigo:document.getElementById('edit_codigo').value,
+    descripcion:document.getElementById('edit_desc').value,
+    marca:document.getElementById('edit_marca').value,
+    modelo:document.getElementById('edit_modelo').value,
+    anio_desde:document.getElementById('edit_anio_desde').value,
+    anio_hasta:document.getElementById('edit_anio_hasta').value,
+    cilindrada:document.getElementById('edit_cc').value,
+    categoria:document.getElementById('edit_cat').value,
+    precio:Number(document.getElementById('edit_precio').value)||0,
+    stock:Number(document.getElementById('edit_stock').value),
+    emoji:document.getElementById('edit_emoji').value||'🔧'
+  };
+  save(); renderAdminTable(''); closeEdit(); showToast('✅ Repuesto actualizado');
+}
+
+// ═══════════════ IMPORTAR EXCEL ═══════════════
+const CAMPOS_SISTEMA = [
+  { key:'descripcion', label:'Descripción / Nombre', obligatorio:true },
+  { key:'marca',       label:'Marca',                obligatorio:false },
+  { key:'modelo',      label:'Modelo / Vehículo',    obligatorio:false },
+  { key:'codigo',      label:'Código / SKU / Ref',   obligatorio:false },
+  { key:'anio_desde',  label:'Año Desde',            obligatorio:false },
+  { key:'anio_hasta',  label:'Año Hasta',            obligatorio:false },
+  { key:'cilindrada',  label:'Cilindrada / CC',      obligatorio:false },
+  { key:'categoria',   label:'Categoría / Tipo',     obligatorio:false },
+  { key:'precio',      label:'Precio',               obligatorio:false },
+  { key:'stock',       label:'Stock / Disponible',   obligatorio:false },
+  { key:'emoji',       label:'Ícono / Emoji',        obligatorio:false },
+];
+
+const ALIASES={
+  descripcion:['descripcion','description','desc','nombre','name','producto','repuesto','articulo','artículo'],
+  marca:['marca','brand','fabricante','make','proveedor'],
+  modelo:['modelo','model','vehiculo','vehículo','auto','carro','compatible'],
+  codigo:['codigo','código','code','cod','ref','referencia','part','sku','id','part_number','numero'],
+  anio_desde:['anio_desde','año_desde','desde','year_from','anio','año','year','year_start','año_inicio'],
+  anio_hasta:['anio_hasta','año_hasta','hasta','year_to','year_end','año_fin'],
+  cilindrada:['cilindrada','cc','motor','engine','displacement','litros'],
+  categoria:['categoria','categoría','category','tipo','type','rubro','familia','grupo'],
+  precio:['precio','price','valor','cost','costo','pvp','importe'],
+  stock:['stock','disponible','available','qty','cantidad','inventory','existencia','unidades'],
+  emoji:['emoji','icon','icono','ícono','simbolo','símbolo']
+};
+
+let _mapeoCtx = null; // { rows, modo, nombre }
+
+function autoDetectarMapeo(headers){
+  const mapa = {};
+  CAMPOS_SISTEMA.forEach(campo=>{
+    const aliases = [campo.key, ...(ALIASES[campo.key]||[])];
+    const match = headers.find(h => aliases.includes(h.toLowerCase().trim().replace(/[áéíóú]/g,c=>({á:'a',é:'e',í:'i',ó:'o',ú:'u'}[c]||c))));
+    mapa[campo.key] = match || '';
+  });
+  return mapa;
+}
+
+function handleExcel(input, modo){
+  const file=input.files[0]; if(!file) return;
+  const st=document.getElementById('uploadStatus');
+  st.className='upload-status show loading'; st.innerHTML='⏳ Procesando "'+file.name+'"...';
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='csv'){
+    const r=new FileReader();
+    r.onload=e=>{try{procesarYMapear(parseCSV(e.target.result),modo,file.name,st);}catch(err){st.className='upload-status show err';st.innerHTML='❌ Error CSV: '+err.message;}};
+    r.readAsText(file,'UTF-8');
+  } else {
+    if(!window.XLSX){
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload=()=>leerXLSX(file,modo,st);
+      document.head.appendChild(s);
+    } else { leerXLSX(file,modo,st); }
+  }
+  input.value='';
+}
+function leerXLSX(file,modo,st){
+  const r=new FileReader();
+  r.onload=e=>{
+    try {
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+      procesarYMapear(rows,modo,file.name,st);
+    } catch(err){st.className='upload-status show err';st.innerHTML='❌ Error Excel: '+err.message;}
+  };
+  r.readAsArrayBuffer(file);
+}
+function parseCSV(text){
+  const sep=text.includes(';')?';':',';
+  const lines=text.trim().split('\n');
+  const headers=lines[0].split(sep).map(h=>h.trim().replace(/"/g,''));
+  return lines.slice(1).map(line=>{
+    const vals=line.split(sep).map(v=>v.trim().replace(/"/g,''));
+    const obj={}; headers.forEach((h,i)=>obj[h]=vals[i]||'');
+    return obj;
+  }).filter(r=>Object.values(r).some(v=>v));
+}
+
+function procesarYMapear(rows, modo, nombre, st){
+  if(!rows.length){st.className='upload-status show err';st.innerHTML='❌ El archivo está vacío.';return;}
+  const headers = Object.keys(rows[0]);
+  const mapaAuto = autoDetectarMapeo(headers);
+  const sinMapear = CAMPOS_SISTEMA.filter(c=>c.obligatorio && !mapaAuto[c.key]);
+
+  // Guardar contexto para cuando el usuario confirme
+  _mapeoCtx = { rows, modo, nombre };
+
+  // Mostrar modal de mapeo
+  abrirMapeo(headers, mapaAuto, rows.slice(0,3), nombre);
+  st.className='upload-status show loading';
+  st.innerHTML=`🗂️ Revisá el mapeo de columnas para "${nombre}" y confirmá.`;
+}
+
+function abrirMapeo(headers, mapaAuto, preview, nombre){
+  const opcionesHTML = `<option value="">— No importar —</option>` +
+    headers.map(h=>`<option value="${h}">${h}</option>`).join('');
+
+  const filasPreview = preview.map(row=>`
+    <tr>${headers.map(h=>`<td style="padding:4px 8px;font-size:0.78rem;color:#ccc;border-bottom:1px solid #333;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${row[h]??''}</td>`).join('')}</tr>
+  `).join('');
+
+  const body = document.getElementById('mapeoBody');
+  body.innerHTML = `
+    <div style="background:#1a1a1c;border:1px solid #333;border-radius:4px;padding:14px 16px;margin-bottom:18px;">
+      <p style="font-size:0.82rem;color:#aaa;margin-bottom:8px;">📄 <strong style="color:#fff">${nombre}</strong> — ${_mapeoCtx.rows.length} filas detectadas</p>
+      <p style="font-size:0.8rem;color:#777;">Asigná qué columna del Excel corresponde a cada campo del sistema. Los que ya están asignados fueron detectados automáticamente.</p>
+    </div>
+
+    <div style="overflow-x:auto;margin-bottom:20px;">
+      <p style="font-size:0.75rem;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Vista previa (primeras filas)</p>
+      <table style="border-collapse:collapse;font-size:0.78rem;width:100%">
+        <thead><tr>${headers.map(h=>`<th style="padding:5px 8px;background:#2c2c2e;color:#aaa;text-align:left;border:1px solid #333;font-size:0.72rem;">${h}</th>`).join('')}</tr></thead>
+        <tbody>${filasPreview}</tbody>
+      </table>
+    </div>
+
+    <p style="font-size:0.75rem;color:#777;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Asignación de columnas</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      ${CAMPOS_SISTEMA.map(campo=>`
+        <div style="background:#1c1c1e;border:1px solid #333;border-radius:4px;padding:12px 14px;">
+          <label style="display:block;font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:${campo.obligatorio?'#e63329':'#aaa'};margin-bottom:6px;">
+            ${campo.label}${campo.obligatorio?' *':''}
+          </label>
+          <select id="map_${campo.key}" style="width:100%;padding:7px 10px;background:#2c2c2e;border:1px solid ${mapaAuto[campo.key]?'#30d158':'#444'};border-radius:3px;color:#fff;font-size:0.85rem;">
+            ${opcionesHTML}
+          </select>
+        </div>
+      `).join('')}
+    </div>
+    <p style="font-size:0.78rem;color:#555;margin-top:14px;">* Campo obligatorio. Los bordes verdes fueron detectados automáticamente.</p>
+  `;
+
+  // Aplicar valores auto-detectados
+  CAMPOS_SISTEMA.forEach(campo=>{
+    const sel = document.getElementById('map_'+campo.key);
+    if(sel && mapaAuto[campo.key]) sel.value = mapaAuto[campo.key];
+  });
+
+  document.getElementById('mapeoModal').classList.add('open');
+}
+
+function cerrarMapeo(){
+  document.getElementById('mapeoModal').classList.remove('open');
+  _mapeoCtx = null;
+}
+
+function confirmarMapeo(){
+  if(!_mapeoCtx) return;
+  // Leer mapeo del usuario
+  const mapa = {};
+  CAMPOS_SISTEMA.forEach(campo=>{
+    const sel = document.getElementById('map_'+campo.key);
+    mapa[campo.key] = sel ? sel.value : '';
+  });
+  // Validar obligatorios
+  const faltantes = CAMPOS_SISTEMA.filter(c=>c.obligatorio && !mapa[c.key]);
+  if(faltantes.length){
+    alert('⚠️ Debés asignar al menos: ' + faltantes.map(c=>c.label).join(', '));
+    return;
+  }
+  cerrarMapeo();
+  importarFilas(_mapeoCtx.rows, _mapeoCtx.modo, _mapeoCtx.nombre, mapa);
+}
+
+function getValMapeado(row, key, mapa){
+  const col = mapa[key];
+  if(col && row[col]!==undefined && row[col]!=='') return row[col];
+  return '';
+}
+
+function importarFilas(rows, modo, nombre, mapa){
+  const st=document.getElementById('uploadStatus');
+  if(!rows.length){st.className='upload-status show err';st.innerHTML='❌ El archivo está vacío.';return;}
+  const nuevos=rows.map(row=>({
+    codigo:getValMapeado(row,'codigo',mapa).toString().trim()||('IMP-'+Math.random().toString(36).slice(2,6).toUpperCase()),
+    descripcion:getValMapeado(row,'descripcion',mapa).toString().trim(),
+    marca:getValMapeado(row,'marca',mapa).toString().trim(),
+    modelo:getValMapeado(row,'modelo',mapa).toString().trim(),
+    anio_desde:getValMapeado(row,'anio_desde',mapa).toString().trim(),
+    anio_hasta:getValMapeado(row,'anio_hasta',mapa).toString().trim(),
+    cilindrada:getValMapeado(row,'cilindrada',mapa).toString().trim(),
+    categoria:getValMapeado(row,'categoria',mapa).toString().trim()||'Otro',
+    precio:Number(getValMapeado(row,'precio',mapa))||0,
+    stock:(()=>{const v=getValMapeado(row,'stock',mapa).toString().toLowerCase();return (v==='1'||v==='si'||v==='sí'||v==='yes'||v==='disponible'||v==='true')?1:0;})(),
+    emoji:getValMapeado(row,'emoji',mapa).toString().trim()||'🔧'
+  })).filter(p=>p.descripcion||p.marca);
+
+  if(modo==='reemplazar'){
+    openConfirm('⚠️ ¿Reemplazar TODOS los productos?',
+      `Se eliminarán los ${APP.productos.length} productos actuales y se cargarán los ${nuevos.length} de "${nombre}". Esta acción no se puede deshacer.`,
+      ()=>{
+        APP.productos=nuevos; save(); renderAdminTable(''); actualizarStats();
+        st.className='upload-status show ok';
+        st.innerHTML=`✅ ¡Listo! ${nuevos.length} productos cargados desde "${nombre}"`;
+        showToast(`✅ ${nuevos.length} productos importados`);
+      });
+  } else {
+    let added=0,updated=0;
+    nuevos.forEach(np=>{
+      const idx=APP.productos.findIndex(p=>p.codigo===np.codigo&&np.codigo);
+      if(idx>=0){APP.productos[idx]=np;updated++;}else{APP.productos.push(np);added++;}
+    });
+    save(); renderAdminTable(''); actualizarStats();
+    st.className='upload-status show ok';
+    st.innerHTML=`✅ "${nombre}": <strong>${added}</strong> nuevos, <strong>${updated}</strong> actualizados.`;
+    showToast(`✅ ${added} nuevos + ${updated} actualizados`);
+  }
+}
+
+// Drag & drop
+['dropAgregar','dropReemplazar'].forEach(id=>{
+  const z=document.getElementById(id);
+  const modo=id.includes('Agregar')?'agregar':'reemplazar';
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('dragover');});
+  z.addEventListener('dragleave',()=>z.classList.remove('dragover'));
+  z.addEventListener('drop',e=>{
+    e.preventDefault();z.classList.remove('dragover');
+    const f=e.dataTransfer.files[0];if(!f)return;
+    handleExcel({files:[f]},modo);
+  });
+});
+
+// ═══════════════ USUARIOS ═══════════════
+function renderUsuarios(){
+  document.getElementById('usuariosList').innerHTML=APP.usuarios.map((u,i)=>`
+    <div class="user-card">
+      <div>
+        <strong>${u.nombre}</strong> <span class="user-badge ${u.rol}">${u.rol}</span>
+        <div style="font-size:0.82rem;color:var(--texto-dim);margin-top:3px">👤 ${u.user}${u.tel?' · 📱 '+u.tel:''}</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        ${u.rol!=='admin'?`<button class="btn-small" style="border-color:#e63329;color:#e63329" onclick="eliminarUsuario(${i})">Eliminar</button>`:'<span style="font-size:0.8rem;color:#555">Protegido</span>'}
+      </div>
+    </div>
+  `).join('');
+}
+function agregarUsuario(){
+  const nombre=document.getElementById('u_nombre').value.trim();
+  const user=document.getElementById('u_user').value.trim();
+  const pass=document.getElementById('u_pass').value;
+  const tel=document.getElementById('u_tel').value.trim();
+  if(!nombre||!user||!pass){showToast('Nombre, usuario y contraseña requeridos',true);return;}
+  if(APP.usuarios.find(u=>u.user===user)){showToast('Ese usuario ya existe',true);return;}
+  APP.usuarios.push({user,pass,nombre,rol:'cliente',tel});
+  save();renderUsuarios();actualizarStats();showToast('✅ Cliente creado: '+nombre);
+  ['u_nombre','u_user','u_pass','u_tel'].forEach(id=>document.getElementById(id).value='');
+}
+function eliminarUsuario(idx){
+  openConfirm('¿Eliminar cliente?',`Se eliminará el usuario "${APP.usuarios[idx].nombre}".`,()=>{
+    APP.usuarios.splice(idx,1);save();renderUsuarios();actualizarStats();showToast('Usuario eliminado');
+  });
+}
+
+// ═══════════════ CONFIG ═══════════════
+function cargarConfig(){
+  document.getElementById('conf_nombre').value=APP.config.nombre||'';
+  document.getElementById('conf_wsp').value=APP.config.wsp||'';
+  document.getElementById('conf_msg').value=APP.config.msgPedido||'';
+  document.getElementById('conf_pass').value='';
+  // Banner
+  document.getElementById('conf_banner_activo').checked=!!APP.config.bannerActivo;
+  document.getElementById('conf_banner_titulo').value=APP.config.bannerTexto||'';
+  document.getElementById('conf_banner_sub').value=APP.config.bannerSubtexto||'';
+  document.getElementById('conf_banner_btn').value=APP.config.bannerBtnTexto||'';
+  document.getElementById('conf_banner_filtro').value=APP.config.bannerBtnFiltro||'';
+  document.getElementById('conf_banner_color').value=APP.config.bannerColor||'#e63329';
+  previsualizarBanner();
+  resaltarColor(APP.config.bannerColor||'#e63329');
+}
+function guardarConfig(){
+  APP.config.nombre=document.getElementById('conf_nombre').value.trim();
+  APP.config.wsp=document.getElementById('conf_wsp').value.trim();
+  APP.config.msgPedido=document.getElementById('conf_msg').value.trim();
+  const np=document.getElementById('conf_pass').value;
+  if(np){APP.config.adminPass=np;const a=APP.usuarios.find(u=>u.rol==='admin');if(a)a.pass=np;}
+  save();showToast('✅ Configuración guardada');
+}
+
+// ═══════════════ BANNER ═══════════════
+function guardarBanner(){
+  APP.config.bannerActivo=document.getElementById('conf_banner_activo').checked;
+  APP.config.bannerTexto=document.getElementById('conf_banner_titulo').value.trim();
+  APP.config.bannerSubtexto=document.getElementById('conf_banner_sub').value.trim();
+  APP.config.bannerBtnTexto=document.getElementById('conf_banner_btn').value.trim();
+  APP.config.bannerBtnFiltro=document.getElementById('conf_banner_filtro').value.trim();
+  APP.config.bannerColor=document.getElementById('conf_banner_color').value;
+  save();showToast('✅ Banner guardado');
+}
+function previsualizarBanner(){
+  const titulo=document.getElementById('conf_banner_titulo').value||'🔥 OFERTA ESPECIAL';
+  const sub=document.getElementById('conf_banner_sub').value||'Hasta 30% de descuento en frenos este mes';
+  const btn=document.getElementById('conf_banner_btn').value||'Ver ofertas';
+  const color=document.getElementById('conf_banner_color').value||'#e63329';
+  document.getElementById('prevTitulo').textContent=titulo;
+  document.getElementById('prevSub').textContent=sub;
+  document.getElementById('prevBtn').textContent=btn;
+  document.getElementById('bannerPreview').style.background=color;
+}
+function selColor(c){
+  document.getElementById('conf_banner_color').value=c;
+  resaltarColor(c);
+  previsualizarBanner();
+}
+function resaltarColor(c){
+  document.querySelectorAll('.color-opt').forEach(el=>{
+    el.classList.toggle('selected', el.style.background===c||el.title&&hexFromName(el.title)===c.toLowerCase());
+  });
+}
+function hexFromName(n){return {Rojo:'#e63329',Azul:'#0a84ff',Verde:'#30d158',Naranja:'#ff9f0a','Púrpura':'#af52de',Oscuro:'#1c1c1e'}[n]?.toLowerCase()||'';}
+function renderBannerCatalogo(){
+  const b=document.getElementById('bannerOferta');
+  if(!APP.config.bannerActivo){b.classList.remove('visible');return;}
+  document.getElementById('bannerTitulo').textContent=APP.config.bannerTexto||'🔥 OFERTA ESPECIAL';
+  document.getElementById('bannerSub').textContent=APP.config.bannerSubtexto||'';
+  document.getElementById('bannerBtn').textContent=APP.config.bannerBtnTexto||'Ver ofertas';
+  b.style.background=APP.config.bannerColor||'#e63329';
+  b.classList.add('visible');
+}
+function bannerClick(){
+  const filtro=APP.config.bannerBtnFiltro;
+  if(filtro){
+    const sel=document.getElementById('fCategoria');
+    if(sel){
+      // buscar opción que coincida (case-insensitive)
+      const opt=[...sel.options].find(o=>o.value.toLowerCase()===filtro.toLowerCase());
+      if(opt) sel.value=opt.value; else sel.value='';
+      filtrar();
+    }
+  }
+}
+function cerrarBanner(){
+  document.getElementById('bannerOferta').classList.remove('visible');
+}
+
+
+// ═══════════════ CATÁLOGO — FILTROS ═══════════════
+function poblarFiltros(){
+  const unique=key=>[...new Set(APP.productos.map(p=>p[key]).filter(Boolean))].sort();
+  const años=new Set();
+  APP.productos.forEach(p=>{
+    const d=parseInt(p.anio_desde),h=parseInt(p.anio_hasta);
+    if(!isNaN(d)&&!isNaN(h)){for(let y=d;y<=h;y++)años.add(y);}
+    else if(!isNaN(d))años.add(d);
+  });
+  const fill=(id,arr)=>{const s=document.getElementById(id);const first=s.options[0];s.innerHTML='';s.appendChild(first);arr.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o);});};
+  fill('fMarca',unique('marca'));
+  fill('fModelo',unique('modelo'));
+  fill('fAnio',[...años].sort((a,b)=>a-b));
+  fill('fCilindrada',unique('cilindrada'));
+  fill('fCategoria',unique('categoria'));
+}
+function limpiarFiltros(){
+  document.getElementById('searchMain').value='';
+  ['fMarca','fModelo','fAnio','fCilindrada','fCategoria','fStock'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  filtrar();
+}
+
+// ═══════════════ BUSCAR ═══════════════
+function filtrar(){
+  const q=document.getElementById('searchMain').value.toLowerCase().trim();
+  const marca=document.getElementById('fMarca').value;
+  const modelo=document.getElementById('fModelo').value;
+  const anio=document.getElementById('fAnio').value;
+  const cc=document.getElementById('fCilindrada').value;
+  const cat=document.getElementById('fCategoria').value;
+  const stock=document.getElementById('fStock').value;
+
+  const res=APP.productos.filter(p=>{
+    if(q&&!`${p.descripcion} ${p.codigo} ${p.categoria} ${p.marca} ${p.modelo}`.toLowerCase().includes(q))return false;
+    if(marca&&p.marca!==marca)return false;
+    if(modelo&&p.modelo!==modelo)return false;
+    if(anio){const y=parseInt(anio),d=parseInt(p.anio_desde),h=parseInt(p.anio_hasta);
+      if(!isNaN(d)&&!isNaN(h)){if(y<d||y>h)return false;}
+      else if(!isNaN(d)){if(y!==d)return false;}}
+    if(cc&&p.cilindrada!==cc)return false;
+    if(cat&&p.categoria!==cat)return false;
+    if(stock!==''&&String(p.stock)!==stock)return false;
+    return true;
+  });
+
+  document.getElementById('resultsInfo').innerHTML=`Mostrando <strong>${res.length}</strong> de ${APP.productos.length} repuestos`;
+  renderProductos(res);
+}
+
+function renderProductos(list){
+  const grid=document.getElementById('productsGrid');
+  if(!list.length){
+    grid.innerHTML='<div class="no-results"><div class="icon">🔍</div><h3>Sin resultados</h3><p>Intenta con otros filtros o términos de búsqueda.</p></div>';
+    return;
+  }
+  grid.innerHTML=list.map(p=>`
+    <div class="product-card">
+      <div class="product-card-img">
+        ${p.emoji||'🔧'}
+        <span class="cat-label">${p.categoria||'Repuesto'}</span>
+      </div>
+      <div class="product-card-body">
+        <h3>${p.descripcion}</h3>
+        <div class="product-meta">
+          🚗 <span>${p.marca}</span> ${p.modelo}<br>
+          📅 <span>${p.anio_desde||'—'}${p.anio_hasta&&p.anio_hasta!==p.anio_desde?'–'+p.anio_hasta:''}</span>${p.cilindrada?`&nbsp; ⚙️ <span>${p.cilindrada}L</span>`:''}
+        </div>
+        <div class="product-price">${fmtPrecio(p.precio)}<small> c/u</small></div>
+        <div class="product-code"># ${p.codigo||'S/C'}</div>
+        <div class="product-footer">
+          <span style="font-size:0.8rem"><span class="stock-dot ${p.stock==1?'in':'out'}"></span>${p.stock==1?'En stock':'Sin stock'}</span>
+          <button class="btn-cart" onclick='agregarCarrito(${JSON.stringify(p).replace(/'/g,"&#39;")})' title="Agregar al pedido">🛒</button>
+          <button class="btn-wsp" onclick='pedirItemWsp(${JSON.stringify(p).replace(/'/g,"&#39;")})'>📲 Pedir</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════ CARRITO ═══════════════
+function agregarCarrito(p){APP.carrito.push(p);document.getElementById('cartCount').textContent=APP.carrito.length;showToast('✅ Agregado al pedido');}
+function openCart(){renderCarrito();document.getElementById('cartModal').classList.add('open');}
+function closeCart(){document.getElementById('cartModal').classList.remove('open');}
+function renderCarrito(){
+  const body=document.getElementById('cartBody');
+  if(!APP.carrito.length){body.innerHTML='<p style="text-align:center;color:var(--texto-dim);padding:40px">Tu pedido está vacío.</p>';document.getElementById('cartTotal').textContent='$0';return;}
+  let total=0;
+  body.innerHTML=APP.carrito.map((p,i)=>{
+    total+=Number(p.precio||0);
+    return `<div class="cart-item">
+      <span class="cart-item-emoji">${p.emoji||'🔧'}</span>
+      <div class="cart-item-info"><strong>${p.descripcion}</strong><small>${p.marca} ${p.modelo} · #${p.codigo||'S/C'}</small></div>
+      <span class="cart-item-price">${fmtPrecio(p.precio)}</span>
+      <button class="cart-item-del" onclick="quitarCarrito(${i})">✕</button>
+    </div>`;
+  }).join('');
+  document.getElementById('cartTotal').textContent=fmtPrecio(total);
+}
+function quitarCarrito(idx){APP.carrito.splice(idx,1);document.getElementById('cartCount').textContent=APP.carrito.length;renderCarrito();}
+
+function buildWspMsg(items){
+  const wsp=APP.config.wsp.replace(/\D/g,'');
+  let msg=`*${APP.config.msgPedido||'Hola! Quiero cotizar:'}*\n`;
+  msg+=`👤 *${APP.currentUser?.nombre||'Anónimo'}*\n📅 ${new Date().toLocaleDateString('es-CL')}\n\n`;
+  items.forEach((p,i)=>{
+    msg+=`${i+1}. *${p.descripcion}*\n`;
+    msg+=`   🚗 ${p.marca} ${p.modelo}`;
+    if(p.anio_desde) msg+=` (${p.anio_desde}${p.anio_hasta?'–'+p.anio_hasta:''})`;
+    if(p.cilindrada) msg+=` · ${p.cilindrada}L`;
+    msg+=`\n   # ${p.codigo||'S/C'}`;
+    if(p.precio) msg+=` · ${fmtPrecio(p.precio)}`;
+    msg+='\n\n';
+  });
+  msg+=`_Por favor confirmar disponibilidad y precio final. Gracias!_`;
+  return `https://wa.me/${wsp}?text=${encodeURIComponent(msg)}`;
+}
+
+function pedirCarritoWsp(){
+  if(!APP.carrito.length){showToast('Tu pedido está vacío',true);return;}
+  window.open(buildWspMsg(APP.carrito),'_blank');
+  closeCart();
+}
+function pedirItemWsp(p){ window.open(buildWspMsg([p]),'_blank'); }
+
+// ═══════════════ CONFIRM ═══════════════
+let _cb=null;
+function openConfirm(title,msg,cb){document.getElementById('confirmTitle').textContent=title;document.getElementById('confirmMsg').textContent=msg;_cb=cb;document.getElementById('confirmModal').classList.add('open');}
+function closeConfirm(){document.getElementById('confirmModal').classList.remove('open');_cb=null;}
+document.getElementById('confirmOk').onclick=()=>{if(_cb)_cb();closeConfirm();};
+
+// ═══════════════ INIT ═══════════════
+load();
+</script>
+</body>
+</html>
